@@ -9,7 +9,7 @@ function getOrigin(url: string) {
   }
 }
 
-const app = fastify({ logger: true });
+const app = fastify();
 
 app.get<{
   Querystring: { url: string };

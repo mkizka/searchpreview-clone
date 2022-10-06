@@ -19,7 +19,6 @@ async function getScreenshot(url: string, viewport: Viewport) {
   const page = await getPage();
   await page.setViewport(viewport ?? { width: 19, height: 574 });
   await page.goto(url);
-  console.log(`goto: ${url}`);
   await sleep(2000);
   return page.screenshot({ type: "png" });
 }
@@ -28,6 +27,7 @@ export async function getPreviewImage(
   url: string,
   options: Viewport & { rate: number }
 ) {
+  console.log(`getScreenshot: ${url}`);
   const file = await getScreenshot(url, options);
   const imageUrl = `data:image/png;base64,${Buffer.from(file).toString(
     "base64"
