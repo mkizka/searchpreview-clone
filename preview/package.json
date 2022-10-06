@@ -1,0 +1,17 @@
+{
+  "name": "preview",
+  "scripts": {
+    "dev": "ts-node-dev api/index.ts",
+    "start": "ts-node api/index.ts"
+  },
+  "dependencies": {
+    "fastify": "^4.7.0",
+    "puppeteer-core": "^18.2.1",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.8.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.6.4"
+  }
+}
