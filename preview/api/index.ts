@@ -54,7 +54,7 @@ app.get<{
     return res.status(400).send();
   }
   if (req.query.url != targetUrl) {
-    res.header("Location", `/api/preview?url=${targetUrl}`);
+    res.header("Location", `/preview.png?url=${targetUrl}`);
     return res.status(302).send();
   }
   const image = await getResizedImage(targetUrl, {
