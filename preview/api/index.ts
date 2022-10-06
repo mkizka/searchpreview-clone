@@ -1,13 +1,6 @@
 import fastify from "fastify";
 import { launch, Page, Viewport } from "puppeteer-core";
 
-const exePath =
-  process.platform === "win32"
-    ? "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
-    : process.platform === "linux"
-    ? "/usr/bin/google-chrome"
-    : "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-
 let _page: Page | null;
 
 async function getPage() {
@@ -15,9 +8,8 @@ async function getPage() {
     return _page;
   }
   const browser = await launch({
-    args: [],
-    executablePath: exePath,
-    headless: true,
+    args: ["--no-sandbox"],
+    executablePath: "/usr/bin/google-chrome",
   });
   _page = await browser.newPage();
   return _page;
@@ -56,7 +48,7 @@ const app = fastify({ logger: true });
 
 app.get<{
   Querystring: { url: string };
-}>("/", async (req, res) => {
+}>("/preview", async (req, res) => {
   if (typeof req.query.url != "string") {
     return res.status(400).send();
   }
@@ -77,4 +69,4 @@ app.get<{
   return res.send(image);
 });
 
-app.listen({ port: 3000 });
+app.listen({ host: "0.0.0.0", port: 3000 });
