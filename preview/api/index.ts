@@ -45,7 +45,7 @@ const app = fastify({ logger: true });
 
 app.get<{
   Querystring: { url: string };
-}>("/preview", async (req, res) => {
+}>("/preview.png", async (req, res) => {
   if (typeof req.query.url != "string") {
     return res.status(400).send();
   }
