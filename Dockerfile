@@ -1,9 +1,7 @@
 FROM node:16
 
-# install chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmour -o /usr/share/keyrings/google-keyring.gpg && \
-  sh -c 'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' && \
-  apt update && apt install -y google-chrome-stable
+# https://seri.hatenablog.com/entry/2020/10/04/012459
+RUN apt update && apt install -y libgtk-3.0 libgbm-dev libnss3 libatk-bridge2.0-0 libasound2
 
 COPY preview/package.json ./
 RUN yarn

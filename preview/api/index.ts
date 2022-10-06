@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { launch, Page, Viewport } from "puppeteer-core";
+import { launch, Page, Viewport } from "puppeteer";
 
 let _page: Page | null;
 
