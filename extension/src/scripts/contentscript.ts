@@ -7,12 +7,14 @@ const searchAnchors = [
 );
 
 window.addEventListener("load", () => {
-  for (const el of searchAnchors) {
+  for (const el of searchAnchors.slice(0, 2)) {
     const img = document.createElement("img");
-    img.src = `http://localhost:3000/api/preview?url=${el.href}`;
-    el.parentNode!.insertBefore(img, el);
-    console.log(img);
-    break;
+    img.src = `https://searchpreview-clone.mkizka.dev/preview.png?url=${el.href}`;
+    img.loading = "lazy";
+    el.parentNode!.parentNode!.parentNode!.parentNode!.parentElement?.insertAdjacentElement(
+      "afterbegin",
+      img
+    );
   }
 });
 

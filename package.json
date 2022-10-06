@@ -1,6 +1,6 @@
 {
   "name": "searchpreview-clone",
   "scripts": {
-    "dev": "pnpm -r develop"
+    "dev": "pnpm -r dev"
   }
 }
