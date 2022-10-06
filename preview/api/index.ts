@@ -7,10 +7,7 @@ async function getPage() {
   if (_page) {
     return _page;
   }
-  const browser = await launch({
-    args: ["--no-sandbox"],
-    executablePath: "/usr/bin/google-chrome",
-  });
+  const browser = await launch({ args: ["--no-sandbox"] });
   _page = await browser.newPage();
   return _page;
 }
