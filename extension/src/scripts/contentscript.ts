@@ -11,6 +11,7 @@ window.addEventListener("load", () => {
     const img = document.createElement("img");
     img.src = `https://searchpreview-clone.mkizka.dev/preview.png?url=${el.href}`;
     img.loading = "lazy";
+    img.style = "position: absolute; left: -150px;";
     el.parentNode!.parentNode!.parentNode!.parentNode!.parentElement?.insertAdjacentElement(
       "afterbegin",
       img

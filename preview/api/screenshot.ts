@@ -1,3 +1,4 @@
+import { setTimeout as sleep } from "timers/promises";
 import { launch, Page, Viewport } from "puppeteer";
 
 let _page: Page | null;
@@ -6,7 +7,10 @@ async function getPage() {
   if (_page) {
     return _page;
   }
-  const browser = await launch({ args: ["--no-sandbox"] });
+  const browser = await launch({
+    headless: true,
+    args: ["--no-sandbox"],
+  });
   _page = await browser.newPage();
   return _page;
 }
@@ -16,6 +20,7 @@ async function getScreenshot(url: string, viewport: Viewport) {
   await page.setViewport(viewport ?? { width: 19, height: 574 });
   await page.goto(url);
   console.log(`goto: ${url}`);
+  await sleep(2000);
   return page.screenshot({ type: "png" });
 }
 
