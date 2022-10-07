@@ -13,12 +13,12 @@ const app = fastify();
 
 app.get("/", (_, reply) => {
   reply.type("text/html");
-  return '<img src="/preview.png?url=https://mkizka.dev" />';
+  return '<img src="/preview.jpg?url=https://mkizka.dev" />';
 });
 
 app.get<{
   Querystring: { url: string };
-}>("/preview.png", async (req, reply) => {
+}>("/preview.jpg", async (req, reply) => {
   if (typeof req.query.url != "string") {
     return reply.status(400).send();
   }
@@ -27,7 +27,7 @@ app.get<{
     return reply.status(400).send();
   }
   if (req.query.url != targetUrl) {
-    reply.header("Location", `/preview.png?url=${targetUrl}`);
+    reply.header("Location", `/preview.jpg?url=${targetUrl}`);
     return reply.status(302).send();
   }
   const request = getPreviewRequest(targetUrl);
@@ -46,7 +46,7 @@ app.get<{
     return reply.status(302).send();
   }
   if (request.state == "success") {
-    reply.type(`image/png`);
+    reply.type(`image/jpeg`);
     return reply.send(request.image);
   }
 });

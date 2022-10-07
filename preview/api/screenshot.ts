@@ -27,9 +27,14 @@ async function getScreenshot(url: string, viewport: Viewport) {
   const page = await browser.newPage();
   page.setDefaultTimeout(60000);
   await page.setViewport(viewport);
-  await page.goto(url);
+  try {
+    // タイムアウトしてもスクショは取るように
+    await page.goto(url);
+  } catch (err) {
+    console.log(err);
+  }
   await sleep(2000);
-  return page.screenshot({ type: "png" });
+  return page.screenshot({ type: "jpeg" });
 }
 
 export async function getPreviewImage(
@@ -38,7 +43,7 @@ export async function getPreviewImage(
 ) {
   console.log("getScreenshot: ", url);
   const image = await getScreenshot(url, options);
-  const imageUrl = `data:image/png;base64,${Buffer.from(image).toString(
+  const imageUrl = `data:image/jpeg;base64,${Buffer.from(image).toString(
     "base64"
   )}`;
   const previewImage = await getScreenshot(imageUrl, {
