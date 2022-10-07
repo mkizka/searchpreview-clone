@@ -35,7 +35,6 @@ async function getScreenshot(url: string, viewport: Viewport) {
       throw err;
     }
   }
-  await sleep(2000);
   return page.screenshot({ type: "jpeg" });
 }
 
