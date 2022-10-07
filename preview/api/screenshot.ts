@@ -7,7 +7,16 @@ async function getBrowser() {
   if (_browser == null) {
     _browser = await launch({
       headless: true,
-      args: ["--no-sandbox"],
+      // https://github.com/puppeteer/puppeteer/issues/3120#issuecomment-415553869
+      args: [
+        "--disable-gpu",
+        "--disable-dev-shm-usage",
+        "--disable-setuid-sandbox",
+        "--no-first-run",
+        "--no-sandbox",
+        "--no-zygote",
+        "--single-process",
+      ],
     });
   }
   return _browser;
@@ -16,6 +25,7 @@ async function getBrowser() {
 async function getScreenshot(url: string, viewport: Viewport) {
   const browser = await getBrowser();
   const page = await browser.newPage();
+  page.setDefaultTimeout(60000);
   await page.setViewport(viewport);
   await page.goto(url);
   await sleep(2000);

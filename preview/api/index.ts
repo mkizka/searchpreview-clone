@@ -11,7 +11,7 @@ function getOrigin(url: string) {
 
 const app = fastify();
 
-app.get("/", (req, reply) => {
+app.get("/", (_, reply) => {
   reply.type("text/html");
   return '<img src="/preview.png?url=https://mkizka.dev" />';
 });
