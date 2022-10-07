@@ -25,15 +25,13 @@ async function getBrowser() {
 async function getScreenshot(url: string, viewport: Viewport) {
   const browser = await getBrowser();
   const page = await browser.newPage();
-  page.setDefaultTimeout(60000);
+  page.setDefaultTimeout(5000);
   await page.setViewport(viewport);
   try {
     await page.goto(url);
   } catch (err) {
     // タイムアウトしてもスクショは取るように
-    if (err instanceof TimeoutError) {
-      console.log(err);
-    } else {
+    if (!(err instanceof TimeoutError)) {
       throw err;
     }
   }
