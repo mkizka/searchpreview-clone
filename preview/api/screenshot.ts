@@ -1,23 +1,22 @@
 import { setTimeout as sleep } from "timers/promises";
-import { launch, Page, Viewport } from "puppeteer";
+import { Browser, launch, Viewport } from "puppeteer";
 
-let _page: Page | null;
+let _browser: Browser | null;
 
-async function getPage() {
-  if (_page) {
-    return _page;
+async function getBrowser() {
+  if (_browser == null) {
+    _browser = await launch({
+      headless: true,
+      args: ["--no-sandbox"],
+    });
   }
-  const browser = await launch({
-    headless: true,
-    args: ["--no-sandbox"],
-  });
-  _page = await browser.newPage();
-  return _page;
+  return _browser;
 }
 
 async function getScreenshot(url: string, viewport: Viewport) {
-  const page = await getPage();
-  await page.setViewport(viewport ?? { width: 19, height: 574 });
+  const browser = await getBrowser();
+  const page = await browser.newPage();
+  await page.setViewport(viewport);
   await page.goto(url);
   await sleep(2000);
   return page.screenshot({ type: "png" });
@@ -27,13 +26,16 @@ export async function getPreviewImage(
   url: string,
   options: Viewport & { rate: number }
 ) {
-  console.log(`getScreenshot: ${url}`);
-  const file = await getScreenshot(url, options);
-  const imageUrl = `data:image/png;base64,${Buffer.from(file).toString(
+  console.log("getScreenshot: ", url);
+  const image = await getScreenshot(url, options);
+  const imageUrl = `data:image/png;base64,${Buffer.from(image).toString(
     "base64"
   )}`;
-  return getScreenshot(imageUrl, {
+  const previewImage = await getScreenshot(imageUrl, {
     width: options.width * options.rate,
     height: options.height * options.rate,
   });
+  await _browser?.close();
+  _browser = null;
+  return previewImage;
 }
