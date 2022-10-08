@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { getPreviewRequest, background } from "./runner";
+import { getPreviewRequest, startBackground } from "./store";
 
 function getOrigin(url: string) {
   try {
@@ -9,11 +9,18 @@ function getOrigin(url: string) {
   }
 }
 
-const app = fastify();
+const app = fastify({ logger: true });
 
 app.get("/", (_, reply) => {
   reply.type("text/html");
-  return '<img src="/preview.jpg?url=https://mkizka.dev" />';
+  return [
+    "https://example.com",
+    "https://mkizka.dev",
+    "https://mkizka.dev/about",
+    "https://ogp.mkizka.dev",
+  ]
+    .map((url) => `<p><img src="/preview.jpg?url=${url}" /></p>`)
+    .join("");
 });
 
 app.get<{
@@ -55,4 +62,7 @@ app.get<{
   }
 });
 
-app.listen({ host: "0.0.0.0", port: 3000 }, () => background());
+app
+  .listen({ host: "0.0.0.0", port: 3000 })
+  .then(() => startBackground(app.log))
+  .catch(app.log.error);

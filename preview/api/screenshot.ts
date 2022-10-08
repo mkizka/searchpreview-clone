@@ -1,58 +1,76 @@
-import { Browser, launch, TimeoutError, Viewport } from "puppeteer";
+import { FastifyBaseLogger } from "fastify";
+import { launch, Page, TimeoutError, Viewport } from "puppeteer";
 
-let _browser: Browser | null;
-
-async function getBrowser() {
-  if (_browser == null) {
-    _browser = await launch({
-      headless: true,
-      // https://github.com/puppeteer/puppeteer/issues/3120#issuecomment-415553869
-      args: [
-        "--disable-gpu",
-        "--disable-dev-shm-usage",
-        "--disable-setuid-sandbox",
-        "--no-first-run",
-        "--no-sandbox",
-        "--no-zygote",
-        "--single-process",
-      ],
-    });
-  }
-  return _browser;
+interface ScreenshotOptions {
+  url: string;
+  viewport: Viewport;
 }
 
-async function getScreenshot(url: string, viewport: Viewport) {
-  const browser = await getBrowser();
-  const page = await browser.newPage();
-  page.setDefaultTimeout(5000);
-  await page.setViewport(viewport);
+async function getScreenshot(page: Page, options: ScreenshotOptions) {
+  page.setDefaultTimeout(10000);
+  await page.setViewport(options.viewport);
   try {
-    await page.goto(url);
+    await page.goto(options.url);
   } catch (err) {
     // タイムアウトしてもスクショは取るように
     if (!(err instanceof TimeoutError)) {
-      console.error(err);
       throw err;
     }
   }
   return page.screenshot({ type: "jpeg" });
 }
 
-export async function getPreviewImage(
-  url: string,
-  options: Viewport & { rate: number }
+interface ScreenshotAndResizeOptions extends ScreenshotOptions {
+  resizeRate: number;
+}
+
+function dataUrl(file: string | Buffer) {
+  return `data:image/jpeg;base64,${Buffer.from(file).toString("base64")}`;
+}
+
+async function getScreenshotAndResize(
+  page: Page,
+  options: ScreenshotAndResizeOptions
 ) {
-  console.log("[START]:", url);
-  const image = await getScreenshot(url, options);
-  const imageUrl = `data:image/jpeg;base64,${Buffer.from(image).toString(
-    "base64"
-  )}`;
-  const previewImage = await getScreenshot(imageUrl, {
-    width: options.width * options.rate,
-    height: options.height * options.rate,
+  const screenshot = await getScreenshot(page, options);
+  const resizedScreenshot = await getScreenshot(page, {
+    url: dataUrl(screenshot),
+    viewport: {
+      width: options.viewport.width * options.resizeRate,
+      height: options.viewport.height * options.resizeRate,
+    },
   });
-  await _browser?.close();
-  _browser = null;
-  console.log("[COMPLETE]:", url);
-  return previewImage;
+  return resizedScreenshot;
+}
+
+interface PreviewImageOptions extends ScreenshotAndResizeOptions {
+  logger: FastifyBaseLogger;
+}
+
+export async function getPreviewImage(options: PreviewImageOptions) {
+  options.logger.info(`generating preview image of ${options.url} ...`);
+  const browser = await launch({
+    headless: true,
+    // https://github.com/puppeteer/puppeteer/issues/3120#issuecomment-415553869
+    args: [
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-setuid-sandbox",
+      "--no-first-run",
+      "--no-sandbox",
+      "--no-zygote",
+      "--single-process",
+    ],
+  });
+  const page = await browser.newPage();
+  try {
+    const image = await getScreenshotAndResize(page, options);
+    options.logger.info(`generating preview image of ${options.url} is done.`);
+    return image;
+  } catch (err) {
+    options.logger.error(err);
+  } finally {
+    await browser.close();
+  }
+  return null;
 }
