@@ -9,7 +9,9 @@ console.log(searchAnchors);
 
 for (const el of searchAnchors) {
   const img = document.createElement("img");
-  img.src = `https://searchpreview-clone.mkizka.dev/preview.jpg?url=${el.href}`;
+  img.src = `https://searchpreview-clone.mkizka.dev/preview.jpg?url=${
+    new URL(el.href).origin
+  }`;
   img.loading = "lazy";
   img.width = 113;
   img.height = 90;

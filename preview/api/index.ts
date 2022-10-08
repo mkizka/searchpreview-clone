@@ -47,6 +47,10 @@ app.get<{
   }
   if (request.state == "success") {
     reply.type(`image/jpeg`);
+    reply.header(
+      "Cache-Control",
+      `public, max-age=31536000` // 1年
+    );
     return reply.send(request.image);
   }
 });
