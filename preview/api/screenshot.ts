@@ -1,4 +1,3 @@
-import { setTimeout as sleep } from "timers/promises";
 import { Browser, launch, TimeoutError, Viewport } from "puppeteer";
 
 let _browser: Browser | null;
@@ -32,6 +31,7 @@ async function getScreenshot(url: string, viewport: Viewport) {
   } catch (err) {
     // タイムアウトしてもスクショは取るように
     if (!(err instanceof TimeoutError)) {
+      console.error(err);
       throw err;
     }
   }
@@ -42,7 +42,7 @@ export async function getPreviewImage(
   url: string,
   options: Viewport & { rate: number }
 ) {
-  console.log("getScreenshot: ", url);
+  console.log("[START]:", url);
   const image = await getScreenshot(url, options);
   const imageUrl = `data:image/jpeg;base64,${Buffer.from(image).toString(
     "base64"
@@ -53,5 +53,6 @@ export async function getPreviewImage(
   });
   await _browser?.close();
   _browser = null;
+  console.log("[COMPLETE]:", url);
   return previewImage;
 }

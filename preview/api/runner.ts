@@ -19,16 +19,14 @@ type PreviewRequest =
 const storedRequests: { [url: string]: PreviewRequest } = {};
 
 function logStoredRequsts() {
-  const text = Object.entries(storedRequests)
-    .filter(([_, item]) => item.state != "success")
-    .map(
-      ([url, item]) =>
-        `${url}: ${item.state == "failure" ? item.err : item.state}`
-    );
-  const success = Object.entries(storedRequests).filter(
-    ([_, item]) => item.state == "success"
+  const stats = Object.entries(storedRequests).reduce(
+    (prev, [_, request]) => ({
+      ...prev,
+      [request.state]: (prev[request.state] ?? 0) + 1,
+    }),
+    {} as { [state in PreviewRequest["state"]]: number }
   );
-  console.log(`storedRequests(${success.length}): `, text);
+  console.log(`[STATS]:`, stats);
 }
 
 async function updateRequest(url: string): Promise<PreviewRequest> {
