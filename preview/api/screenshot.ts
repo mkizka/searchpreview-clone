@@ -1,5 +1,6 @@
 import { FastifyBaseLogger } from "fastify";
-import { launch, Page, TimeoutError, Viewport } from "puppeteer";
+import { Page, TimeoutError, Viewport } from "puppeteer";
+import { getBrowser } from "./browser";
 
 interface ScreenshotOptions {
   url: string;
@@ -49,19 +50,7 @@ interface PreviewImageOptions extends ScreenshotAndResizeOptions {
 
 export async function getPreviewImage(options: PreviewImageOptions) {
   options.logger.info(`generating preview image of ${options.url} ...`);
-  const browser = await launch({
-    headless: true,
-    // https://github.com/puppeteer/puppeteer/issues/3120#issuecomment-415553869
-    args: [
-      "--disable-gpu",
-      "--disable-dev-shm-usage",
-      "--disable-setuid-sandbox",
-      "--no-first-run",
-      "--no-sandbox",
-      "--no-zygote",
-      "--single-process",
-    ],
-  });
+  const browser = await getBrowser();
   const page = await browser.newPage();
   try {
     const image = await getScreenshotAndResize(page, options);
@@ -70,7 +59,7 @@ export async function getPreviewImage(options: PreviewImageOptions) {
   } catch (err) {
     options.logger.error(err);
   } finally {
-    await browser.close();
+    await page.close();
   }
   return null;
 }
