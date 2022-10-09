@@ -12,7 +12,7 @@ type PreviewRequest =
 
 const cache = new Map<string, PreviewRequest>();
 
-export function getPreviewRequest(url: string) {
+export function getPreviewRequest(url: string, logger: FastifyBaseLogger) {
   if (!cache.has(url)) {
     cache.set(url, { state: "requested" });
   }
@@ -20,6 +20,7 @@ export function getPreviewRequest(url: string) {
   if (request.state == "success") {
     // CDNにキャッシュされたことを信じて消す
     cache.delete(url);
+    logger.info(`now stats is ${getStoreStats()}`);
   }
   return request;
 }
@@ -65,6 +66,10 @@ export async function startBackground(logger: FastifyBaseLogger) {
     const url = requestedUrls[0];
     cache.set(url, await updateRequest(url, logger));
     logger.info(`now stats is ${getStoreStats()}`);
+    // 生成した画像をCDNにキャッシュさせる
+    await fetch(
+      `https://searchpreview-clone.mkizka.dev/preview.png?url=${url}`
+    );
   }
   setTimeout(() => startBackground(logger), 100);
 }

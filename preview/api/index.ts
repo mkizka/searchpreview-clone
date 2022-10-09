@@ -37,7 +37,7 @@ app.get<{
     reply.header("Location", `/preview.jpg?url=${targetUrl}`);
     return reply.status(302).send();
   }
-  const request = getPreviewRequest(targetUrl);
+  const request = getPreviewRequest(targetUrl, app.log);
   if (request.state == "requested") {
     reply.header(
       "Location",
