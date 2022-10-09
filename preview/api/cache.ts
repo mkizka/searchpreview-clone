@@ -68,7 +68,11 @@ export async function startBackground(logger: FastifyBaseLogger) {
     cache.set(url, await updateRequest(url, logger));
     logger.info(`now stats is ${getStoreStats()}`);
     // 生成した画像をCDNにキャッシュさせる
-    await got(`https://searchpreview-clone.mkizka.dev/preview.jpg?url=${url}`);
+    setTimeout(
+      () =>
+        got(`https://searchpreview-clone.mkizka.dev/preview.jpg?url=${url}`),
+      1000
+    );
   }
   setTimeout(() => startBackground(logger), 100);
 }
