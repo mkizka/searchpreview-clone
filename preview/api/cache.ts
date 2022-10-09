@@ -1,3 +1,4 @@
+import got from "got";
 import { FastifyBaseLogger } from "fastify";
 import { getPreviewImage } from "./screenshot";
 
@@ -67,9 +68,7 @@ export async function startBackground(logger: FastifyBaseLogger) {
     cache.set(url, await updateRequest(url, logger));
     logger.info(`now stats is ${getStoreStats()}`);
     // 生成した画像をCDNにキャッシュさせる
-    await fetch(
-      `https://searchpreview-clone.mkizka.dev/preview.jpg?url=${url}`
-    );
+    await got(`https://searchpreview-clone.mkizka.dev/preview.jpg?url=${url}`);
   }
   setTimeout(() => startBackground(logger), 100);
 }
