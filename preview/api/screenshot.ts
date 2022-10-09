@@ -54,7 +54,7 @@ export async function getPreviewImage(options: PreviewImageOptions) {
   const page = await browser.newPage();
   try {
     const image = await getScreenshotAndResize(page, options);
-    options.logger.info(`generating preview image of ${options.url} is done.`);
+    options.logger.info(`generating preview image of ${options.url} ... done.`);
     return image;
   } catch (err) {
     options.logger.error(err);

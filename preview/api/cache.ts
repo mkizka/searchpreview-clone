@@ -4,24 +4,24 @@ import { getPreviewImage } from "./screenshot";
 type PreviewRequest =
   | {
       state: "success";
-      updatedAt: Date;
       image: string | Buffer;
     }
   | {
       state: "requested" | "failure";
-      updatedAt: Date;
     };
 
-const storedRequests: { [url: string]: PreviewRequest } = {};
+const cache = new Map<string, PreviewRequest>();
 
 export function getPreviewRequest(url: string) {
-  if (!(url in storedRequests)) {
-    storedRequests[url] = {
-      state: "requested",
-      updatedAt: new Date(),
-    };
+  if (!cache.has(url)) {
+    cache.set(url, { state: "requested" });
   }
-  return storedRequests[url];
+  const request = cache.get(url)!;
+  if (request.state == "success") {
+    // CDNにキャッシュされたことを信じて消す
+    cache.delete(url);
+  }
+  return request;
 }
 
 async function updateRequest(
@@ -37,17 +37,15 @@ async function updateRequest(
   return image == null
     ? {
         state: "failure",
-        updatedAt: new Date(),
       }
     : {
         state: "success",
-        updatedAt: new Date(),
         image,
       };
 }
 
 function getStoreStats() {
-  const stats = Object.entries(storedRequests).reduce(
+  const stats = [...cache].reduce(
     (prev, [_, request]) => ({
       ...prev,
       [request.state]: (prev[request.state] ?? 0) + 1,
@@ -60,13 +58,13 @@ function getStoreStats() {
 }
 
 export async function startBackground(logger: FastifyBaseLogger) {
-  const requestedUrls = Object.entries(storedRequests).find(
+  const requestedUrls = [...cache].find(
     ([_, request]) => request.state == "requested"
   );
   if (requestedUrls) {
     const url = requestedUrls[0];
-    storedRequests[url] = await updateRequest(url, logger);
+    cache.set(url, await updateRequest(url, logger));
     logger.info(`now stats is ${getStoreStats()}`);
   }
-  setTimeout(() => startBackground(logger), 5000);
+  setTimeout(() => startBackground(logger));
 }

@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { getPreviewRequest, startBackground } from "./store";
+import { getPreviewRequest, startBackground } from "./cache";
 
 function getOrigin(url: string) {
   try {
