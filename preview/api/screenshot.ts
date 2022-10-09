@@ -34,14 +34,13 @@ async function getScreenshotAndResize(
   options: ScreenshotAndResizeOptions
 ) {
   const screenshot = await getScreenshot(page, options);
-  const resizedScreenshot = await getScreenshot(page, {
+  return getScreenshot(page, {
     url: dataUrl(screenshot),
     viewport: {
-      width: options.viewport.width * options.resizeRate,
-      height: options.viewport.height * options.resizeRate,
+      width: Math.ceil(options.viewport.width * options.resizeRate),
+      height: Math.ceil(options.viewport.height * options.resizeRate),
     },
   });
-  return resizedScreenshot;
 }
 
 interface PreviewImageOptions extends ScreenshotAndResizeOptions {

@@ -31,7 +31,7 @@ async function updateRequest(
   const image = await getPreviewImage({
     url,
     viewport: { width: 1000, height: 800 },
-    resizeRate: 1 / 8,
+    resizeRate: 1 / 10,
     logger,
   });
   return image == null
@@ -66,5 +66,5 @@ export async function startBackground(logger: FastifyBaseLogger) {
     cache.set(url, await updateRequest(url, logger));
     logger.info(`now stats is ${getStoreStats()}`);
   }
-  setTimeout(() => startBackground(logger));
+  setTimeout(() => startBackground(logger), 100);
 }
