@@ -6,11 +6,9 @@ import { getBrowser } from "./browser";
 interface ScreenshotOptions {
   url: string;
   viewport: Viewport;
-  logger: FastifyBaseLogger;
 }
 
 async function getScreenshot(page: Page, options: ScreenshotOptions) {
-  const startTime = new Date();
   await page.setViewport(options.viewport);
   try {
     await page.goto(options.url, { timeout: 10000 });
@@ -20,10 +18,7 @@ async function getScreenshot(page: Page, options: ScreenshotOptions) {
       throw err;
     }
   }
-  const image = page.screenshot({ type: "jpeg" });
-  const time = (new Date().getTime() - startTime.getTime()) / 1000;
-  options.logger.info(`preview generated in ${time}s`);
-  return image;
+  return page.screenshot({ type: "jpeg" });
 }
 
 interface ScreenshotAndResizeOptions extends ScreenshotOptions {
@@ -45,11 +40,12 @@ async function getScreenshotAndResize(
       width: Math.ceil(options.viewport.width * options.resizeRate),
       height: Math.ceil(options.viewport.height * options.resizeRate),
     },
-    logger: options.logger,
   });
 }
 
-interface PreviewImageOptions extends ScreenshotAndResizeOptions {}
+interface PreviewImageOptions extends ScreenshotAndResizeOptions {
+  logger: FastifyBaseLogger;
+}
 
 async function reportErrorToDiscord(err: unknown) {
   if (process.env.DISCORD_URL) {
@@ -60,12 +56,16 @@ async function reportErrorToDiscord(err: unknown) {
 }
 
 export async function getPreviewImage(options: PreviewImageOptions) {
+  const startTime = new Date();
   options.logger.info(`generating preview image of ${options.url} ...`);
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
     const image = await getScreenshotAndResize(page, options);
-    options.logger.info(`generating preview image of ${options.url} ... done.`);
+    const time = (new Date().getTime() - startTime.getTime()) / 1000;
+    options.logger.info(
+      `generating preview image of ${options.url} ... done in ${time}s`
+    );
     return image;
   } catch (err) {
     options.logger.error(err);
