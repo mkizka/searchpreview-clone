@@ -8,10 +8,9 @@ interface ScreenshotOptions {
 }
 
 async function getScreenshot(page: Page, options: ScreenshotOptions) {
-  page.setDefaultTimeout(10000);
   await page.setViewport(options.viewport);
   try {
-    await page.goto(options.url);
+    await page.goto(options.url, { timeout: 10000 });
   } catch (err) {
     // タイムアウトしてもスクショは取るように
     if (!(err instanceof TimeoutError)) {
