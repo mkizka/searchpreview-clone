@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import { FastifyBaseLogger } from "fastify";
 import { getPreviewImage } from "./screenshot";
 
-type TaskItem =
+type PreviewRequest =
   | {
       state: "requested" | "failure";
     }
@@ -12,15 +12,15 @@ type TaskItem =
       image: Buffer;
     };
 
-const tasks = new Map<string, TaskItem>();
+const requests = new Map<string, PreviewRequest>();
 
-function logTaskStats(logger: FastifyBaseLogger) {
-  const stats = [...tasks].reduce(
+function logRequestStats(logger: FastifyBaseLogger) {
+  const stats = [...requests].reduce(
     (prev, [_, request]) => ({
       ...prev,
       [request.state]: (prev[request.state] ?? 0) + 1,
     }),
-    {} as { [state in TaskItem["state"]]: number }
+    {} as { [state in PreviewRequest["state"]]: number }
   );
   const text = Object.entries(stats)
     .map(([state, count]) => `${state}: ${count}`)
@@ -33,26 +33,26 @@ function imagePath(url: string) {
   return path.resolve(__dirname, `../images/${name}.jpg`);
 }
 
-export async function getTaskItem(
+export async function getPreviewRequest(
   url: string,
   logger: FastifyBaseLogger
-): Promise<TaskItem> {
+): Promise<PreviewRequest> {
   try {
     return {
       state: "success",
       image: await fs.readFile(imagePath(url)),
     };
   } catch {
-    if (!tasks.has(url)) {
-      tasks.set(url, { state: "requested" });
-      logTaskStats(logger);
+    if (!requests.has(url)) {
+      requests.set(url, { state: "requested" });
+      logRequestStats(logger);
     }
-    return tasks.get(url)!;
+    return requests.get(url)!;
   }
 }
 
 export async function startBackground(logger: FastifyBaseLogger) {
-  const requestedUrls = [...tasks].find(
+  const requestedUrls = [...requests].find(
     ([_, request]) => request.state == "requested"
   );
   if (requestedUrls) {
@@ -64,11 +64,11 @@ export async function startBackground(logger: FastifyBaseLogger) {
       logger,
     });
     if (image == null) {
-      tasks.set(url, { state: "failure" });
+      requests.set(url, { state: "failure" });
     } else {
       fs.writeFile(imagePath(url), image);
-      tasks.delete(url);
-      logTaskStats(logger);
+      requests.delete(url);
+      logRequestStats(logger);
     }
   }
   setTimeout(() => startBackground(logger), 100);

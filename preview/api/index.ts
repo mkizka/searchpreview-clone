@@ -1,5 +1,5 @@
 import fastify from "fastify";
-import { getJobItem, startBackground } from "./job";
+import { getPreviewRequest, startBackground } from "./request";
 
 function getOrigin(url: string) {
   try {
@@ -37,28 +37,28 @@ app.get<{
     reply.header("Location", `/preview.jpg?url=${targetUrl}`);
     return reply.status(302).send();
   }
-  const job = await getJobItem(targetUrl, app.log);
-  if (job.state == "requested") {
+  const request = await getPreviewRequest(targetUrl, app.log);
+  if (request.state == "requested") {
     reply.header(
       "Location",
-      `https://via.placeholder.com/125x100.png?text=Capture+Requested`
+      `https://via.placeholder.com/300x240.png?text=Requested`
     );
     return reply.status(302).send();
   }
-  if (job.state == "failure") {
+  if (request.state == "failure") {
     reply.header(
       "Location",
-      `https://via.placeholder.com/125x100.png?text=Request+Failed`
+      `https://via.placeholder.com/300x240.png?text=Error`
     );
     return reply.status(302).send();
   }
-  if (job.state == "success") {
+  if (request.state == "success") {
     reply.type(`image/jpeg`);
     reply.header(
       "Cache-Control",
       `public, max-age=31536000` // 1年
     );
-    return reply.send(job.image);
+    return reply.send(request.image);
   }
 });
 
