@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "fastify": "^4.7.0",
+    "got": "11",
     "puppeteer": "^18.2.1",
     "ts-node": "^10.9.1"
   },

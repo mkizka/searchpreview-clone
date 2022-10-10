@@ -1,4 +1,5 @@
 import { FastifyBaseLogger } from "fastify";
+import got from "got";
 import { Page, TimeoutError, Viewport } from "puppeteer";
 import { getBrowser } from "./browser";
 
@@ -46,6 +47,14 @@ interface PreviewImageOptions extends ScreenshotAndResizeOptions {
   logger: FastifyBaseLogger;
 }
 
+async function reportErrorToDiscord(err: unknown) {
+  // @ts-ignore
+  const content = `\`\`\`${err.stack}\`\`\``;
+  if (process.env.DISCORD_URL) {
+    await got.post(process.env.DISCORD_URL, { json: { content } });
+  }
+}
+
 export async function getPreviewImage(options: PreviewImageOptions) {
   options.logger.info(`generating preview image of ${options.url} ...`);
   const browser = await getBrowser();
@@ -56,6 +65,7 @@ export async function getPreviewImage(options: PreviewImageOptions) {
     return image;
   } catch (err) {
     options.logger.error(err);
+    await reportErrorToDiscord(err);
   } finally {
     await page.close();
   }
