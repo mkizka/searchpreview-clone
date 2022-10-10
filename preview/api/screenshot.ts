@@ -6,9 +6,11 @@ import { getBrowser } from "./browser";
 interface ScreenshotOptions {
   url: string;
   viewport: Viewport;
+  logger: FastifyBaseLogger;
 }
 
 async function getScreenshot(page: Page, options: ScreenshotOptions) {
+  const startTime = new Date();
   await page.setViewport(options.viewport);
   try {
     await page.goto(options.url, { timeout: 10000 });
@@ -18,7 +20,10 @@ async function getScreenshot(page: Page, options: ScreenshotOptions) {
       throw err;
     }
   }
-  return page.screenshot({ type: "jpeg" });
+  const image = page.screenshot({ type: "jpeg" });
+  const time = (new Date().getTime() - startTime.getTime()) / 1000;
+  options.logger.info(`preview generated in ${time}s`);
+  return image;
 }
 
 interface ScreenshotAndResizeOptions extends ScreenshotOptions {
@@ -40,17 +45,16 @@ async function getScreenshotAndResize(
       width: Math.ceil(options.viewport.width * options.resizeRate),
       height: Math.ceil(options.viewport.height * options.resizeRate),
     },
+    logger: options.logger,
   });
 }
 
-interface PreviewImageOptions extends ScreenshotAndResizeOptions {
-  logger: FastifyBaseLogger;
-}
+interface PreviewImageOptions extends ScreenshotAndResizeOptions {}
 
 async function reportErrorToDiscord(err: unknown) {
-  // @ts-ignore
-  const content = `\`\`\`${err.stack}\`\`\``;
   if (process.env.DISCORD_URL) {
+    // @ts-ignore
+    const content = `\`\`\`${err.stack}\`\`\``;
     await got.post(process.env.DISCORD_URL, { json: { content } });
   }
 }
