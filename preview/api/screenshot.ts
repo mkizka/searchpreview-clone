@@ -69,7 +69,15 @@ export async function getPreviewImage(options: PreviewImageOptions) {
     return image;
   } catch (err) {
     options.logger.error(err);
-    await reportErrorToDiscord(err);
+    if (
+      err instanceof Error &&
+      ![
+        "net::ERR_TOO_MANY_REDIRECTS",
+        "net::ERR_CERT_AUTHORITY_INVALID",
+      ].includes(err.message)
+    ) {
+      await reportErrorToDiscord(err);
+    }
   } finally {
     await page.close();
   }
