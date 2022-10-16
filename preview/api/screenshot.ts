@@ -47,9 +47,8 @@ interface PreviewImageOptions extends ScreenshotAndResizeOptions {
   logger: FastifyBaseLogger;
 }
 
-async function reportErrorToDiscord(err: unknown) {
+async function reportErrorToDiscord(err: Error) {
   if (process.env.DISCORD_URL) {
-    // @ts-ignore
     const content = `\`\`\`${err.stack}\`\`\``;
     await got.post(process.env.DISCORD_URL, { json: { content } });
   }
@@ -74,7 +73,8 @@ export async function getPreviewImage(options: PreviewImageOptions) {
       ![
         "net::ERR_TOO_MANY_REDIRECTS",
         "net::ERR_CERT_AUTHORITY_INVALID",
-      ].includes(err.message)
+        "net::ERR_CERT_DATE_INVALID",
+      ].includes(err.message.split(" ")[0])
     ) {
       await reportErrorToDiscord(err);
     }
